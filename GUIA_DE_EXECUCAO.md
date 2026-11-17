@@ -1,59 +1,57 @@
 # 🚀 Guia de Execução
 
-Como rodar o projeto **Dark Kitchen** em um novo ambiente.
+Como rodar e testar o projeto **Dark Kitchen** em qualquer ambiente.
 
 ---
 
-## Pré-requisitos
+## ⚡ Opção 1: Sem Node.js (Direto pelo Navegador — Recomendado para testes rápidos)
 
-Você precisa ter instalado na sua máquina:
+Você **não precisa instalar nada** para testar o site!
 
-- **Node.js** (versão 18 ou superior) — [baixar aqui](https://nodejs.org/)
+1. Vá até a pasta do projeto (`App_new_order`).
+2. Dê dois cliques no arquivo **`index.html`** (ou clique com botão direito → *Abrir com* → Google Chrome, Microsoft Edge ou Firefox).
+3. O sistema será carregado imediatamente no navegador.
 
-> Para verificar se já tem, abra o terminal e digite:
-> ```
-> node --version
-> ```
+### Como funciona o teste sem Node:
+- **Zero dependências:** funciona 100% offline e sem necessidade de servidor local.
+- **Persistência total:** todos os dados de pedidos, avanços de produção, novos insumos cadastrados e configurações são salvos automaticamente no **`localStorage`** do navegador.
+- **Restauração rápida:** se quiser reiniciar os testes do zero com os dados fictícios originais, vá até a página **Configurações** e clique em **"Restaurar Dados Iniciais de Teste"**.
 
 ---
 
-## Passo a passo
+## 💻 Opção 2: Com Node.js (Ambiente de Desenvolvimento)
 
-**1. Clone o projeto** (ou copie a pasta para o seu computador)
+Se desejar executar o projeto via servidor local com Node.js:
 
+### Pré-requisitos
+- **Node.js** (versão 18 ou superior) — [download oficial](https://nodejs.org/)
+
+### Passo a passo
+
+**1. Abra o terminal na pasta do projeto**
 ```bash
-git clone <url-do-repositorio>
 cd App_new_order
 ```
 
 **2. Instale as dependências**
-
 ```bash
 npm install
 ```
 
-**3. Inicie o servidor de desenvolvimento**
-
+**3. Inicie o servidor local**
 ```bash
 npm run dev
 ```
 
-**4. Abra no navegador**
-
-Acesse o endereço exibido no terminal (geralmente `http://localhost:5173`).
-
-Pronto! O sistema já abre com dados de exemplo prontos para uso.
+**4. Acesse no navegador**
+Abra o link exibido no terminal (geralmente `http://localhost:5173`).
 
 ---
 
-## Gerar versão para produção
+## 📦 Gerar pacote de produção
 
+Caso queira gerar a build otimizada:
 ```bash
 npm run build
-```
-
-Os arquivos otimizados serão gerados na pasta `dist/`. Para pré-visualizar:
-
-```bash
 npm run preview
 ```

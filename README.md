@@ -15,7 +15,7 @@ Centralize pedidos de delivery, acompanhe a produção em tempo real e controle 
 | **Insumos** | Controle de estoque com cadastro, edição, exclusão e alerta de estoque baixo |
 | **Configurações** | Dados da cozinha: nome, endereço, telefone e horário de funcionamento |
 
-> 📖 **Primeira vez rodando o projeto?** Veja o [Guia de Execução](GUIA_DE_EXECUCAO.md).
+> 📖 **Quer testar o projeto?** Veja o [Guia de Execução](GUIA_DE_EXECUCAO.md). Você pode testar **sem precisar do Node.js**, apenas abrindo o `index.html` no seu navegador!
 
 ---
 

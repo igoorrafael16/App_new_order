@@ -1,13 +1,1766 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>app-new-order</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dark Kitchen — Sistema de Gestão</title>
+  <style>
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #f3f4f6;
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Layout */
+    .app-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: #1a3a2a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.2s ease;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 8px;
+      gap: 4px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .sidebar-link.active {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Main Area */
+    .app-main {
+      flex: 1;
+      margin-left: 240px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #f3f4f6;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      padding: 0 24px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #374151;
+      padding: 4px;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      white-space: nowrap;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: #9ca3af;
+    }
+
+    .header-search input {
+      border: none;
+      background: none;
+      outline: none;
+      font-size: 14px;
+      width: 180px;
+      color: #374151;
+    }
+
+    .header-notification {
+      position: relative;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-notification-badge {
+      position: absolute;
+      top: -2px;
+      right: -4px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Content Area */
+    .app-content {
+      padding: 24px;
+      flex: 1;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 20px;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a3a2a;
+    }
+
+    .dashboard-section {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 12px;
+      color: #6b7280;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px;
+      color: #374151;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    .cell-bold {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Orders Page */
+    .orders-filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .orders-search {
+      flex: 1;
+      min-width: 220px;
+      padding: 8px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    .orders-search:focus {
+      border-color: #1a3a2a;
+    }
+
+    .orders-select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .orders-table-container {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .status-select {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fff;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-icon:hover {
+      color: #1a3a2a;
+      background: #f3f4f6;
+    }
+
+    .btn-icon-danger:hover {
+      color: #ef4444 !important;
+      background: #fee2e2 !important;
+    }
+
+    .empty-row {
+      text-align: center;
+      color: #9ca3af;
+      padding: 24px !important;
+    }
+
+    /* Production Board */
+    .production-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      min-height: calc(100vh - 160px);
+    }
+
+    .prod-column {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .prod-column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-top: 3px solid;
+      border-radius: 9px 9px 0 0;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .prod-column-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .prod-column-count {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+    }
+
+    .prod-column-body {
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .prod-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .prod-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .prod-card-id {
+      font-weight: 700;
+      font-size: 13px;
+      color: #1f2937;
+    }
+
+    .prod-elapsed {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .prod-card-client {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .prod-card-items {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .prod-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .prod-card-channel {
+      font-size: 11px;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .prod-advance-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #1a3a2a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .prod-advance-btn:hover {
+      background: #245238;
+    }
+
+    .prod-empty {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 13px;
+      padding: 24px 0;
+    }
+
+    /* Supplies Page */
+    .supplies-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a3a2a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #245238;
+    }
+
+    .btn-full {
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+      padding: 10px;
+    }
+
+    .supplies-table-container {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .row-low-stock {
+      background: #fef2f2 !important;
+    }
+
+    .stock-alert {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #ef4444;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fee2e2;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .stock-ok {
+      color: #10b981;
+      font-size: 12px;
+      font-weight: 600;
+      background: #ecfdf5;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Settings Page */
+    .settings-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 24px;
+      max-width: 600px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .settings-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .settings-form label,
+    .supply-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .settings-form input,
+    .supply-form input,
+    .supply-form select {
+      padding: 9px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    .settings-form input:focus,
+    .supply-form input:focus,
+    .supply-form select:focus {
+      border-color: #1a3a2a;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .save-feedback {
+      color: #10b981;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .reset-storage-btn {
+      margin-top: 24px;
+      background: none;
+      border: 1px solid #d1d5db;
+      color: #6b7280;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reset-storage-btn:hover {
+      background: #f9fafb;
+      color: #1f2937;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .modal-body {
+      padding: 20px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .modal-body p {
+      margin-bottom: 8px;
+    }
+
+    .supply-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .production-board {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.sidebar-open {
+        transform: translateX(0);
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+      .sidebar-close {
+        display: flex;
+      }
+      .app-main {
+        margin-left: 0;
+      }
+      .header {
+        padding: 0 16px;
+      }
+      .header-menu-btn {
+        display: flex;
+      }
+      .header-search input {
+        width: 110px;
+      }
+      .app-content {
+        padding: 16px;
+      }
+      .dashboard-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .orders-filters {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .production-board {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-cards {
+        grid-template-columns: 1fr;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <!-- ChefHat Icon -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/>
+            <path d="M6 17h12"/>
+          </svg>
+          <span>Dark Kitchen</span>
+        </div>
+        <button class="sidebar-close" onclick="toggleSidebar(false)">
+          <!-- X Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="sidebar-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
+          <!-- LayoutDashboard Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="9" x="3" y="3" rx="1"/>
+            <rect width="7" height="5" x="14" y="3" rx="1"/>
+            <rect width="7" height="9" x="14" y="12" rx="1"/>
+            <rect width="7" height="5" x="3" y="16" rx="1"/>
+          </svg>
+          <span>Visão Geral</span>
+        </button>
+
+        <button class="sidebar-link" data-page="pedidos" onclick="navigateTo('pedidos')">
+          <!-- ClipboardList Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <path d="M12 11h4"/>
+            <path d="M12 16h4"/>
+            <path d="M8 11h.01"/>
+            <path d="M8 16h.01"/>
+          </svg>
+          <span>Pedidos</span>
+        </button>
+
+        <button class="sidebar-link" data-page="producao" onclick="navigateTo('producao')">
+          <!-- Flame / Cooking Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"/>
+          </svg>
+          <span>Produção</span>
+        </button>
+
+        <button class="sidebar-link" data-page="insumos" onclick="navigateTo('insumos')">
+          <!-- Package Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m7.5 4.27 9 5.15"/>
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <path d="m3.3 7 8.7 5 8.7-5"/>
+            <path d="M12 22V12"/>
+          </svg>
+          <span>Insumos</span>
+        </button>
+
+        <button class="sidebar-link" data-page="configuracoes" onclick="navigateTo('configuracoes')">
+          <!-- Settings Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>Configurações</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="app-main">
+      <!-- Top Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="header-menu-btn" onclick="toggleSidebar(true)">
+            <!-- Menu Hamburger Icon -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" x2="20" y1="12" y2="12"></line>
+              <line x1="4" x2="20" y1="6" y2="6"></line>
+              <line x1="4" x2="20" y1="18" y2="18"></line>
+            </svg>
+          </button>
+          <h2 id="headerKitchenName" class="header-title">Poké Kitchen — Dark Kitchen</h2>
+        </div>
+
+        <div class="header-right">
+          <div class="header-search">
+            <!-- Search Icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="globalSearchInput" placeholder="Buscar pedido..." oninput="handleGlobalSearch(this.value)" />
+          </div>
+          <button class="header-notification" title="Notificações" onclick="alert('3 novos pedidos recebidos na última hora!')">
+            <!-- Bell Icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
+            <span class="header-notification-badge">3</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Page Content -->
+      <main id="appContent" class="app-content">
+        <!-- Rendered by JavaScript -->
+      </main>
+    </div>
+  </div>
+
+  <!-- Global Modal Container -->
+  <div id="modalContainer"></div>
+
+  <script>
+    /* ==========================================================================
+       DADOS INICIAIS & CONSTANTES
+       ========================================================================== */
+    const DEFAULT_ORDERS = [
+      {
+        id: 'PED-001',
+        cliente: 'Maria Silva',
+        itens: [
+          { nome: 'Poké Salmão Clássico', qtd: 1, preco: 39.90 },
+          { nome: 'Suco de Maracujá', qtd: 1, preco: 12.00 }
+        ],
+        total: 51.90,
+        status: 'entregue',
+        canal: 'iFood',
+        hora: '11:32',
+        data: '2026-11-17',
+        endereco: 'Rua das Flores, 123 - Centro'
+      },
+      {
+        id: 'PED-002',
+        cliente: 'João Oliveira',
+        itens: [
+          { nome: 'Poké Atum Especial', qtd: 1, preco: 44.90 },
+          { nome: 'Edamame', qtd: 1, preco: 14.00 },
+          { nome: 'Água de Coco', qtd: 1, preco: 9.00 }
+        ],
+        total: 67.90,
+        status: 'em_preparo',
+        canal: 'Rappi',
+        hora: '12:05',
+        data: '2026-11-17',
+        endereco: 'Av. Paulista, 900 - Bela Vista'
+      },
+      {
+        id: 'PED-003',
+        cliente: 'Ana Costa',
+        itens: [
+          { nome: 'Bowl Vegetariano', qtd: 2, preco: 34.90 }
+        ],
+        total: 69.80,
+        status: 'pronto',
+        canal: 'Uber Eats',
+        hora: '12:15',
+        data: '2026-11-17',
+        endereco: 'Rua Augusta, 456 - Consolação'
+      },
+      {
+        id: 'PED-004',
+        cliente: 'Carlos Mendes',
+        itens: [
+          { nome: 'Poké Camarão', qtd: 1, preco: 49.90 },
+          { nome: 'Missoshiru', qtd: 1, preco: 16.00 }
+        ],
+        total: 65.90,
+        status: 'novo',
+        canal: 'iFood',
+        hora: '12:28',
+        data: '2026-11-17',
+        endereco: 'Rua Oscar Freire, 789 - Jardins'
+      },
+      {
+        id: 'PED-005',
+        cliente: 'Fernanda Lima',
+        itens: [
+          { nome: 'Poké Salmão Clássico', qtd: 1, preco: 39.90 },
+          { nome: 'Poké Atum Especial', qtd: 1, preco: 44.90 },
+          { nome: 'Chá Gelado', qtd: 2, preco: 10.00 }
+        ],
+        total: 104.80,
+        status: 'em_preparo',
+        canal: 'WhatsApp',
+        hora: '12:35',
+        data: '2026-11-17',
+        endereco: 'Rua Haddock Lobo, 234 - Cerqueira César'
+      },
+      {
+        id: 'PED-006',
+        cliente: 'Roberto Santos',
+        itens: [
+          { nome: 'Bowl Frango Teriyaki', qtd: 1, preco: 36.90 }
+        ],
+        total: 36.90,
+        status: 'novo',
+        canal: 'Rappi',
+        hora: '12:42',
+        data: '2026-11-17',
+        endereco: 'Alameda Santos, 567 - Paraíso'
+      },
+      {
+        id: 'PED-007',
+        cliente: 'Lucia Ferreira',
+        itens: [
+          { nome: 'Poké Salmão Clássico', qtd: 1, preco: 39.90 },
+          { nome: 'Edamame', qtd: 1, preco: 14.00 }
+        ],
+        total: 53.90,
+        status: 'entregue',
+        canal: 'Uber Eats',
+        hora: '11:50',
+        data: '2026-11-17',
+        endereco: 'Rua da Consolação, 1020 - República'
+      },
+      {
+        id: 'PED-008',
+        cliente: 'Pedro Almeida',
+        itens: [
+          { nome: 'Bowl Vegetariano', qtd: 1, preco: 34.90 },
+          { nome: 'Suco Verde', qtd: 1, preco: 14.00 }
+        ],
+        total: 48.90,
+        status: 'saiu_entrega',
+        canal: 'iFood',
+        hora: '12:10',
+        data: '2026-11-17',
+        endereco: 'Rua Bela Cintra, 345 - Jardins'
+      }
+    ];
+
+    const DEFAULT_SUPPLIES = [
+      { id: 1, nome: 'Salmão Fresco', fornecedor: 'Peixaria Oceano', quantidade: 8, unidade: 'kg', estoqueMinimo: 5 },
+      { id: 2, nome: 'Atum', fornecedor: 'Peixaria Oceano', quantidade: 3, unidade: 'kg', estoqueMinimo: 4 },
+      { id: 3, nome: 'Arroz Japonês', fornecedor: 'Distribuidora Asia', quantidade: 25, unidade: 'kg', estoqueMinimo: 10 },
+      { id: 4, nome: 'Alga Nori', fornecedor: 'Distribuidora Asia', quantidade: 50, unidade: 'un', estoqueMinimo: 20 },
+      { id: 5, nome: 'Abacate', fornecedor: 'Hortifruti Central', quantidade: 2, unidade: 'kg', estoqueMinimo: 5 },
+      { id: 6, nome: 'Pepino Japonês', fornecedor: 'Hortifruti Central', quantidade: 6, unidade: 'kg', estoqueMinimo: 3 },
+      { id: 7, nome: 'Molho Shoyu', fornecedor: 'Distribuidora Asia', quantidade: 10, unidade: 'L', estoqueMinimo: 3 },
+      { id: 8, nome: 'Gengibre', fornecedor: 'Hortifruti Central', quantidade: 4, unidade: 'kg', estoqueMinimo: 2 },
+      { id: 9, nome: 'Cream Cheese', fornecedor: 'Laticínios Minas', quantidade: 5, unidade: 'kg', estoqueMinimo: 3 },
+      { id: 10, nome: 'Embalagens Delivery', fornecedor: 'EmbaPack', quantidade: 150, unidade: 'un', estoqueMinimo: 100 },
+      { id: 11, nome: 'Camarão', fornecedor: 'Peixaria Oceano', quantidade: 2, unidade: 'kg', estoqueMinimo: 3 },
+      { id: 12, nome: 'Edamame', fornecedor: 'Distribuidora Asia', quantidade: 8, unidade: 'kg', estoqueMinimo: 2 }
+    ];
+
+    const DEFAULT_SETTINGS = {
+      nome: 'Poké Kitchen — Dark Kitchen',
+      endereco: 'Rua dos Sabores, 500 — Pinheiros, São Paulo - SP',
+      telefone: '(11) 99876-5432',
+      horarioAbertura: '10:00',
+      horarioFechamento: '22:00'
+    };
+
+    const STATUS_LABELS = {
+      novo: 'Novo',
+      em_preparo: 'Em Preparo',
+      pronto: 'Pronto',
+      saiu_entrega: 'Saiu p/ Entrega',
+      entregue: 'Entregue',
+      cancelado: 'Cancelado'
+    };
+
+    const STATUS_COLORS = {
+      novo: '#2563eb',
+      em_preparo: '#f59e0b',
+      pronto: '#10b981',
+      saiu_entrega: '#8b5cf6',
+      entregue: '#6b7280',
+      cancelado: '#ef4444'
+    };
+
+    const PRODUCTION_STAGES = ['novo', 'em_preparo', 'pronto', 'saiu_entrega'];
+
+    const NEXT_STATUS = {
+      novo: 'em_preparo',
+      em_preparo: 'pronto',
+      pronto: 'saiu_entrega',
+      saiu_entrega: 'entregue'
+    };
+
+    /* ==========================================================================
+       STORAGE & ESTADO
+       ========================================================================== */
+    function loadStorage(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function saveStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {
+        console.warn('Erro ao salvar no localStorage:', e);
+      }
+    }
+
+    const state = {
+      currentPage: 'dashboard',
+      orders: loadStorage('dk_orders', DEFAULT_ORDERS),
+      supplies: loadStorage('dk_supplies', DEFAULT_SUPPLIES),
+      settings: loadStorage('dk_settings', DEFAULT_SETTINGS),
+      ordersSearch: '',
+      ordersStatusFilter: 'todos',
+      ordersChannelFilter: 'Todos'
+    };
+
+    function persistOrders() {
+      saveStorage('dk_orders', state.orders);
+    }
+    function persistSupplies() {
+      saveStorage('dk_supplies', state.supplies);
+    }
+    function persistSettings() {
+      saveStorage('dk_settings', state.settings);
+    }
+
+    /* ==========================================================================
+       ROTEAMENTO & NAVEGAÇÃO
+       ========================================================================== */
+    function navigateTo(pageId) {
+      state.currentPage = pageId;
+      document.querySelectorAll('.sidebar-link').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-page') === pageId);
+      });
+      toggleSidebar(false);
+      render();
+    }
+
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (open) {
+        sidebar.classList.add('sidebar-open');
+        overlay.classList.add('active');
+      } else {
+        sidebar.classList.remove('sidebar-open');
+        overlay.classList.remove('active');
+      }
+    }
+
+    function updateHeader() {
+      document.getElementById('headerKitchenName').textContent = state.settings.nome;
+    }
+
+    function handleGlobalSearch(query) {
+      if (!query.trim()) return;
+      state.ordersSearch = query.trim();
+      if (state.currentPage !== 'pedidos') {
+        navigateTo('pedidos');
+      } else {
+        render();
+      }
+    }
+
+    /* ==========================================================================
+       AÇÕES DO SISTEMA (PEDIDOS, PRODUÇÃO, INSUMOS, CONFIGURAÇÕES)
+       ========================================================================== */
+    function updateOrderStatus(orderId, newStatus) {
+      state.orders = state.orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o);
+      persistOrders();
+      render();
+    }
+
+    function advanceOrderStatus(orderId) {
+      const order = state.orders.find(o => o.id === orderId);
+      if (order && NEXT_STATUS[order.status]) {
+        updateOrderStatus(orderId, NEXT_STATUS[order.status]);
+      }
+    }
+
+    function saveSupply(e, id) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        nome: form.nome.value.trim(),
+        fornecedor: form.fornecedor.value.trim(),
+        quantidade: Number(form.quantidade.value),
+        unidade: form.unidade.value,
+        estoqueMinimo: Number(form.estoqueMinimo.value)
+      };
+
+      if (id) {
+        state.supplies = state.supplies.map(s => s.id === id ? { ...s, ...data } : s);
+      } else {
+        const nextId = state.supplies.reduce((max, s) => Math.max(max, s.id), 0) + 1;
+        state.supplies.push({ ...data, id: nextId });
+      }
+
+      persistSupplies();
+      closeModal();
+      render();
+    }
+
+    function deleteSupply(id) {
+      if (confirm('Deseja realmente excluir este insumo?')) {
+        state.supplies = state.supplies.filter(s => s.id !== id);
+        persistSupplies();
+        render();
+      }
+    }
+
+    function saveSettings(e) {
+      e.preventDefault();
+      const form = e.target;
+      state.settings = {
+        nome: form.nome.value.trim(),
+        endereco: form.endereco.value.trim(),
+        telefone: form.telefone.value.trim(),
+        horarioAbertura: form.horarioAbertura.value,
+        horarioFechamento: form.horarioFechamento.value
+      };
+      persistSettings();
+      updateHeader();
+
+      const feedback = document.getElementById('settingsFeedback');
+      if (feedback) {
+        feedback.style.display = 'block';
+        setTimeout(() => { feedback.style.display = 'none'; }, 2500);
+      }
+    }
+
+    function resetToDefaultData() {
+      if (confirm('Tem certeza que deseja restaurar os dados originais de teste? Todos os cadastros e alterações serão redefinidos.')) {
+        state.orders = JSON.parse(JSON.stringify(DEFAULT_ORDERS));
+        state.supplies = JSON.parse(JSON.stringify(DEFAULT_SUPPLIES));
+        state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+        persistOrders();
+        persistSupplies();
+        persistSettings();
+        updateHeader();
+        render();
+        alert('Dados restaurados com sucesso!');
+      }
+    }
+
+    /* ==========================================================================
+       MODAIS
+       ========================================================================== */
+    function closeModal() {
+      document.getElementById('modalContainer').innerHTML = '';
+    }
+
+    function openOrderModal(orderId) {
+      const order = state.orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const container = document.getElementById('modalContainer');
+      container.innerHTML = `
+        <div class="modal-overlay" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Pedido ${order.id}</h3>
+              <button class="btn-icon" onclick="closeModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Cliente:</strong> ${order.cliente}</p>
+              <p><strong>Endereço:</strong> ${order.endereco}</p>
+              <p><strong>Canal de Origem:</strong> ${order.canal}</p>
+              <p><strong>Horário:</strong> ${order.hora}</p>
+              <p><strong>Status:</strong> <span class="status-badge" style="background:${STATUS_COLORS[order.status]}20; color:${STATUS_COLORS[order.status]};">${STATUS_LABELS[order.status]}</span></p>
+              
+              <h4 style="margin: 16px 0 8px 0; font-size: 13px; text-transform: uppercase; color: #6b7280;">Itens do Pedido</h4>
+              <table class="data-table" style="margin-bottom: 12px;">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="text-align: center;">Qtd</th>
+                    <th style="text-align: right;">Preço</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.itens.map(item => `
+                    <tr>
+                      <td>${item.nome}</td>
+                      <td style="text-align: center;">${item.qtd}</td>
+                      <td style="text-align: right;">R$ ${item.preco.toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div style="text-align: right; font-size: 16px; font-weight: 700; color: #1a3a2a; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                Total: R$ ${order.total.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function openSupplyModal(id) {
+      const editing = id ? state.supplies.find(s => s.id === id) : null;
+      const container = document.getElementById('modalContainer');
+      container.innerHTML = `
+        <div class="modal-overlay" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <h3>${editing ? 'Editar Insumo' : 'Novo Insumo'}</h3>
+              <button class="btn-icon" onclick="closeModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <form class="modal-body supply-form" onsubmit="saveSupply(event, ${editing ? editing.id : 'null'})">
+              <label>
+                Nome do Insumo
+                <input required name="nome" value="${editing ? editing.nome : ''}" placeholder="Ex: Salmão Fresco" />
+              </label>
+              <label>
+                Fornecedor
+                <input required name="fornecedor" value="${editing ? editing.fornecedor : ''}" placeholder="Ex: Peixaria Oceano" />
+              </label>
+              <div class="form-row">
+                <label>
+                  Quantidade em Estoque
+                  <input type="number" step="any" min="0" required name="quantidade" value="${editing ? editing.quantidade : ''}" placeholder="0" />
+                </label>
+                <label>
+                  Unidade de Medida
+                  <select name="unidade">
+                    <option value="kg" ${editing && editing.unidade === 'kg' ? 'selected' : ''}>kg</option>
+                    <option value="g" ${editing && editing.unidade === 'g' ? 'selected' : ''}>g</option>
+                    <option value="L" ${editing && editing.unidade === 'L' ? 'selected' : ''}>L</option>
+                    <option value="mL" ${editing && editing.unidade === 'mL' ? 'selected' : ''}>mL</option>
+                    <option value="un" ${editing && editing.unidade === 'un' ? 'selected' : ''}>un</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Estoque Mínimo de Segurança
+                <input type="number" step="any" min="0" required name="estoqueMinimo" value="${editing ? editing.estoqueMinimo : ''}" placeholder="Ex: 5" />
+              </label>
+              <button type="submit" class="btn-primary btn-full">
+                ${editing ? 'Salvar Alterações' : 'Cadastrar Insumo'}
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       PÁGINAS (RENDERS)
+       ========================================================================== */
+    function renderDashboard() {
+      const today = new Date().toISOString().slice(0, 10);
+      const todayOrders = state.orders; // para teste consideramos os pedidos cadastrados
+      const totalPedidos = todayOrders.length;
+      const faturamento = todayOrders
+        .filter(o => o.status !== 'cancelado')
+        .reduce((sum, o) => sum + o.total, 0);
+      const emPreparo = todayOrders.filter(o => o.status === 'em_preparo').length;
+      const entregues = todayOrders.filter(o => o.status === 'entregue').length;
+
+      const recentOrders = [...state.orders].reverse().slice(0, 8);
+
+      return `
+        <h1 class="page-title">Visão Geral</h1>
+
+        <div class="dashboard-cards">
+          <div class="stat-card">
+            <span class="stat-label">Pedidos Hoje</span>
+            <span class="stat-value">${totalPedidos}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Faturamento do Dia</span>
+            <span class="stat-value">R$ ${faturamento.toFixed(2)}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Em Preparo</span>
+            <span class="stat-value">${emPreparo}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Pedidos Entregues</span>
+            <span class="stat-value">${entregues}</span>
+          </div>
+        </div>
+
+        <div class="dashboard-section">
+          <h2 class="section-title">Pedidos Recentes</h2>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Canal</th>
+                  <th>Hora</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${recentOrders.map(order => `
+                  <tr>
+                    <td class="cell-bold">${order.id}</td>
+                    <td>${order.cliente}</td>
+                    <td>${order.canal}</td>
+                    <td>${order.hora}</td>
+                    <td>R$ ${order.total.toFixed(2)}</td>
+                    <td>
+                      <span class="status-badge" style="background:${STATUS_COLORS[order.status]}20; color:${STATUS_COLORS[order.status]};">
+                        ${STATUS_LABELS[order.status]}
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOrders() {
+      const statuses = ['todos', 'novo', 'em_preparo', 'pronto', 'saiu_entrega', 'entregue', 'cancelado'];
+      const channels = ['Todos', 'iFood', 'Rappi', 'Uber Eats', 'WhatsApp'];
+
+      const filtered = state.orders.filter(o => {
+        if (state.ordersStatusFilter !== 'todos' && o.status !== state.ordersStatusFilter) return false;
+        if (state.ordersChannelFilter !== 'Todos' && o.canal !== state.ordersChannelFilter) return false;
+        if (state.ordersSearch) {
+          const q = state.ordersSearch.toLowerCase();
+          return o.id.toLowerCase().includes(q) || o.cliente.toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      return `
+        <h1 class="page-title">Pedidos</h1>
+
+        <div class="orders-filters">
+          <input
+            type="text"
+            class="orders-search"
+            placeholder="Buscar por ID ou cliente..."
+            value="${state.ordersSearch}"
+            oninput="state.ordersSearch = this.value; render();"
+          />
+          <select class="orders-select" onchange="state.ordersStatusFilter = this.value; render();">
+            ${statuses.map(s => `
+              <option value="${s}" ${state.ordersStatusFilter === s ? 'selected' : ''}>
+                ${s === 'todos' ? 'Todos os Status' : STATUS_LABELS[s]}
+              </option>
+            `).join('')}
+          </select>
+          <select class="orders-select" onchange="state.ordersChannelFilter = this.value; render();">
+            ${channels.map(c => `
+              <option value="${c}" ${state.ordersChannelFilter === c ? 'selected' : ''}>
+                ${c === 'Todos' ? 'Todos os Canais' : c}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+
+        <div class="orders-table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Canal</th>
+                  <th>Hora</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th style="text-align: center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered.length > 0 ? filtered.map(order => `
+                  <tr>
+                    <td class="cell-bold">${order.id}</td>
+                    <td>${order.cliente}</td>
+                    <td>${order.canal}</td>
+                    <td>${order.hora}</td>
+                    <td>R$ ${order.total.toFixed(2)}</td>
+                    <td>
+                      <select class="status-select" style="color: ${STATUS_COLORS[order.status]}" onchange="updateOrderStatus('${order.id}', this.value)">
+                        ${Object.keys(STATUS_LABELS).map(st => `
+                          <option value="${st}" ${order.status === st ? 'selected' : ''}>${STATUS_LABELS[st]}</option>
+                        `).join('')}
+                      </select>
+                    </td>
+                    <td style="text-align: center;">
+                      <button class="btn-icon" onclick="openOrderModal('${order.id}')" title="Ver detalhes do pedido">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                `).join('') : `
+                  <tr><td colspan="7" class="empty-row">Nenhum pedido encontrado para os filtros selecionados.</td></tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function calculateElapsed(hora) {
+      if (!hora) return '0min';
+      const [h, m] = hora.split(':').map(Number);
+      const now = new Date();
+      const orderTime = new Date();
+      orderTime.setHours(h, m, 0, 0);
+      let diff = Math.floor((now - orderTime) / 60000);
+      if (diff < 0) diff = 0;
+      const hours = Math.floor(diff / 60);
+      const mins = diff % 60;
+      return hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+    }
+
+    function renderProduction() {
+      const columns = PRODUCTION_STAGES.map(stage => ({
+        stage,
+        label: STATUS_LABELS[stage],
+        color: STATUS_COLORS[stage],
+        orders: state.orders.filter(o => o.status === stage)
+      }));
+
+      return `
+        <h1 class="page-title">Produção</h1>
+        <div class="production-board">
+          ${columns.map(col => `
+            <div class="prod-column">
+              <div class="prod-column-header" style="border-top-color: ${col.color};">
+                <span class="prod-column-title">${col.label}</span>
+                <span class="prod-column-count" style="background: ${col.color};">${col.orders.length}</span>
+              </div>
+              <div class="prod-column-body">
+                ${col.orders.length > 0 ? col.orders.map(order => `
+                  <div class="prod-card">
+                    <div class="prod-card-top">
+                      <span class="prod-card-id">${order.id}</span>
+                      <span class="prod-elapsed">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        ${calculateElapsed(order.hora)}
+                      </span>
+                    </div>
+                    <p class="prod-card-client">${order.cliente}</p>
+                    <p class="prod-card-items">
+                      ${order.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ')}
+                    </p>
+                    <div class="prod-card-footer">
+                      <span class="prod-card-channel">${order.canal}</span>
+                      ${NEXT_STATUS[col.stage] ? `
+                        <button class="prod-advance-btn" onclick="advanceOrderStatus('${order.id}')" title="Avançar para ${STATUS_LABELS[NEXT_STATUS[col.stage]]}">
+                          ${STATUS_LABELS[NEXT_STATUS[col.stage]]}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                          </svg>
+                        </button>
+                      ` : ''}
+                    </div>
+                  </div>
+                `).join('') : `
+                  <p class="prod-empty">Nenhum pedido nesta etapa</p>
+                `}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderSupplies() {
+      return `
+        <div class="supplies-header">
+          <h1 class="page-title" style="margin-bottom: 0;">Insumos</h1>
+          <button class="btn-primary" onclick="openSupplyModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Novo Insumo
+          </button>
+        </div>
+
+        <div class="supplies-table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Insumo</th>
+                  <th>Fornecedor</th>
+                  <th>Qtd. Atual</th>
+                  <th>Estoque Mín.</th>
+                  <th>Situação</th>
+                  <th style="text-align: center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${state.supplies.map(s => {
+                  const isLow = s.quantidade <= s.estoqueMinimo;
+                  return `
+                    <tr class="${isLow ? 'row-low-stock' : ''}">
+                      <td class="cell-bold">${s.nome}</td>
+                      <td>${s.fornecedor}</td>
+                      <td>${s.quantidade} ${s.unidade}</td>
+                      <td>${s.estoqueMinimo} ${s.unidade}</td>
+                      <td>
+                        ${isLow ? `
+                          <span class="stock-alert">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                              <line x1="12" y1="9" x2="12" y2="13"/>
+                              <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            Estoque Baixo
+                          </span>
+                        ` : `
+                          <span class="stock-ok">Normal</span>
+                        `}
+                      </td>
+                      <td style="text-align: center;">
+                        <div class="action-buttons" style="justify-content: center;">
+                          <button class="btn-icon" onclick="openSupplyModal(${s.id})" title="Editar Insumo">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                            </svg>
+                          </button>
+                          <button class="btn-icon btn-icon-danger" onclick="deleteSupply(${s.id})" title="Excluir Insumo">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M3 6h18"/>
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSettings() {
+      return `
+        <h1 class="page-title">Configurações</h1>
+
+        <div class="settings-card">
+          <h2 class="section-title">Dados da Cozinha</h2>
+          <form class="settings-form" onsubmit="saveSettings(event)">
+            <label>
+              Nome da Cozinha
+              <input required name="nome" value="${state.settings.nome}" />
+            </label>
+            <label>
+              Endereço Completo
+              <input required name="endereco" value="${state.settings.endereco}" />
+            </label>
+            <label>
+              Telefone / WhatsApp
+              <input required name="telefone" value="${state.settings.telefone}" />
+            </label>
+            <div class="form-row">
+              <label>
+                Horário de Abertura
+                <input type="time" required name="horarioAbertura" value="${state.settings.horarioAbertura}" />
+              </label>
+              <label>
+                Horário de Fechamento
+                <input type="time" required name="horarioFechamento" value="${state.settings.horarioFechamento}" />
+              </label>
+            </div>
+            <button type="submit" class="btn-primary btn-full">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Salvar Alterações
+            </button>
+            <p id="settingsFeedback" class="save-feedback" style="display: none;">✓ Configurações salvas com sucesso!</p>
+          </form>
+
+          <hr style="margin: 24px 0 16px 0; border: none; border-top: 1px solid #e5e7eb;" />
+          <div>
+            <span style="font-size: 13px; color: #6b7280;">Deseja reiniciar os dados de teste da aplicação?</span><br/>
+            <button class="reset-storage-btn" onclick="resetToDefaultData()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              Restaurar Dados Iniciais de Teste
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       RENDER PRINCIPAL
+       ========================================================================== */
+    function render() {
+      const container = document.getElementById('appContent');
+      updateHeader();
+
+      switch (state.currentPage) {
+        case 'dashboard':
+          container.innerHTML = renderDashboard();
+          break;
+        case 'pedidos':
+          container.innerHTML = renderOrders();
+          break;
+        case 'producao':
+          container.innerHTML = renderProduction();
+          break;
+        case 'insumos':
+          container.innerHTML = renderSupplies();
+          break;
+        case 'configuracoes':
+          container.innerHTML = renderSettings();
+          break;
+        default:
+          container.innerHTML = renderDashboard();
+      }
+    }
+
+    // Inicialização
+    render();
+
+    // Atualização a cada minuto para o tempo decorrido em produção
+    setInterval(() => {
+      if (state.currentPage === 'producao') {
+        render();
+      }
+    }, 60000);
+  </script>
+</body>
 </html>
